@@ -1,8 +1,11 @@
 package main
 
 import (
+	"compress/zlib"
 	"fmt"
+	"io"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -25,6 +28,21 @@ func main() {
 		}
 
 		fmt.Println("Initialized gitx directory")
+	case "cat-file":
+		filePath := fmt.Sprintf(".gitx/objects/%s/%s", os.Args[3][:2], os.Args[3][2:])
+		file, err := os.Open(filePath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error opening file: %s\n", err)
+			os.Exit(1)
+		}
+		fileReader := io.Reader(file)
+		r, _ := zlib.NewReader(fileReader)
+		w, _ := io.ReadAll(r)
+		parts := strings.Split(string(w), "\x00")
+		if os.Args[2] == "-p" {
+			fmt.Print(parts[1])
+		}
+		r.Close()
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command %s\n", command)
 		os.Exit(1)
