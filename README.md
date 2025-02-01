@@ -27,7 +27,7 @@ GitX is designed to offer an alternative implementation of Git functionalities w
 To install GitX, you'll need Go installed on your system. Follow these steps:
 
 ```bash
-git clone https://github.com/yourusername/gitx.git
+git clone https://github.com/ABHINAV-JHA-27/gitx.git
 cd gitx
 make build  # or go install
 ```
