@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"compress/zlib"
+	"crypto/sha1"
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -43,6 +46,25 @@ func main() {
 			fmt.Print(parts[1])
 		}
 		r.Close()
+	case "hash-object":
+		file, _ := os.ReadFile(os.Args[3])
+		stats, _ := os.Stat(os.Args[3])
+		content := string(file)
+		contentHeader := fmt.Sprintf("blob %d\x00%s", stats.Size(), content)
+		sha := sha1.Sum([]byte(contentHeader))
+		hash := fmt.Sprintf("%x", sha)
+		blobName := []rune(hash)
+		blobPath := ".gitx/objects" + string(blobName[:2]) + string(blobName[:2])
+		var buffer bytes.Buffer
+		z := zlib.NewWriter(&buffer)
+		z.Write([]byte(contentHeader))
+		z.Close()
+		os.Mkdir(filepath.Dir(blobPath), os.ModePerm)
+		f, _ := os.Create(blobPath)
+		defer f.Close()
+		f.Write(buffer.Bytes())
+		fmt.Print(hash)
+
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command %s\n", command)
 		os.Exit(1)
