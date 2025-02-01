@@ -54,7 +54,7 @@ func main() {
 		sha := sha1.Sum([]byte(contentHeader))
 		hash := fmt.Sprintf("%x", sha)
 		blobName := []rune(hash)
-		blobPath := ".gitx/objects/" + string(blobName[:2]) + "/" + string(blobName[:2])
+		blobPath := ".gitx/objects/" + string(blobName[:2]) + "/" + string(blobName[2:])
 		var buffer bytes.Buffer
 		z := zlib.NewWriter(&buffer)
 		z.Write([]byte(contentHeader))
