@@ -64,7 +64,39 @@ func main() {
 		defer f.Close()
 		f.Write(buffer.Bytes())
 		fmt.Print(hash)
-
+	case "ls-tree":
+		sha := os.Args[3]
+		dir, file := sha[:2], sha[2:]
+		filePath := filepath.Join(".gitx/objects", dir, file)
+		openedFile, err := os.Open(filePath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error opening file: %s\n", err)
+			os.Exit(1)
+		}
+		defer openedFile.Close()
+		zLibReader, err := zlib.NewReader(openedFile)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error reading compressed object: %s\n", err)
+			os.Exit(1)
+		}
+		defer zLibReader.Close()
+		conn, err := io.ReadAll(zLibReader)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error reading decompressed object: %s\n", err)
+			os.Exit(1)
+		}
+		if os.Args[2] == "--name-only" {
+			split := bytes.Split(conn, []byte("\x00"))
+			use := split[1:]
+			for _, dByte := range use {
+				splitByte := bytes.Split(dByte, []byte(" "))
+				for _, part := range splitByte {
+					fmt.Println(string(part))
+				}
+			}
+		} else {
+			//Parse the code.
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command %s\n", command)
 		os.Exit(1)

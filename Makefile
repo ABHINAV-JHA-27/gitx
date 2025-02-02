@@ -1,2 +1,5 @@
 build:
-	@go build -o gitx cmd/main.go
+	@echo "Building the application..."
+	@go mod tidy
+	@go build -o app cmd/main.go
+	@echo "Application built successfully!!"
